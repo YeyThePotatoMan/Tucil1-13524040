@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
@@ -93,10 +94,23 @@ func main() {
 	grid = container.New(layout.NewGridLayout(1))
 	lblTime := widget.NewLabel("Time: 0ms")
 	lblIter := widget.NewLabel("Iter: 0")
+	lblStatus := widget.NewLabel("Status: Waiting for input")
 
 	btn1 := widget.NewButton("Solver 1 (Live without pruning)", func() {})
 	btn2 := widget.NewButton("Solver 2 (Live with Pruning)", func() {})
 	btn3 := widget.NewButton("Solver 3 (No live updates)", func() {})
+	btnLoad := widget.NewButton("Load Input", func() {
+		dialog.ShowFileOpen(func(r fyne.URIReadCloser, err error) {
+			if r == nil {
+				return
+			}
+
+			if read_file(r.URI().Path()) {
+				build_grid()
+				lblStatus.SetText("Status: File Loaded")
+			}
+		}, w)
+	})
 
 	slider := widget.NewSlider(1, 500)
 	slider.SetValue(50)
@@ -110,9 +124,10 @@ func main() {
 	}()
 
 	sidepanel := container.NewVBox(
+		btnLoad,
 		btn1, btn2, btn3,
 		slider,
-		lblTime, lblIter,
+		lblStatus, lblTime, lblIter,
 	)
 
 	split := container.NewHSplit(sidepanel, container.NewPadded(grid))
