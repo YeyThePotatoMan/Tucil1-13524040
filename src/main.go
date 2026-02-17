@@ -191,6 +191,39 @@ func save_to_image(filename string) {
 	}
 }
 
+func save_to_txt(filename string) {
+	if n == 0 {
+		return
+	}
+
+	filename += ".txt"
+
+	outputPath := filepath.Join("../test", filename)
+
+	f, err := os.Create(outputPath)
+	if err != nil {
+		lblStatus.SetText("Status: failed to save txt.")
+		return
+	}
+	defer f.Close()
+
+	for r := 0; r < n; r++ {
+		var line string
+		for c := 0; c < n; c++ {
+			if ans[r] == c {
+				line += "#"
+			} else {
+				line += string(g[r][c])
+			}
+		}
+
+		if _, err := f.WriteString(line + "\n"); err != nil {
+			lblStatus.SetText("Status: failed to save txt.")
+			return
+		}
+	}
+
+}
 func main() {
 	fmt.Println("working")
 	n = 0
@@ -221,12 +254,19 @@ func main() {
 			}
 		}, w)
 	})
-	btnSaveImg := widget.NewButton("Save as image", func() {
+	btnSaveImg := widget.NewButton("Save answer as image", func() {
 		if !found {
 			return
 		}
 		save_to_image("sol-img-" + time.Now().Format("20060102150405"))
 		lblStatus.SetText("Status: Solution saved as image!")
+	})
+	btnSaveTxt := widget.NewButton("Save answer as txt", func() {
+		if !found {
+			return
+		}
+		save_to_txt("sol-txt-" + time.Now().Format("20060102150405"))
+		lblStatus.SetText("Status: Solution saved as text!")
 	})
 
 	lblSlider := widget.NewLabel("Update speed slider (ms): ")
@@ -248,6 +288,7 @@ func main() {
 		slider,
 		layout.NewSpacer(),
 		btnSaveImg,
+		btnSaveTxt,
 		lblStatus, lblTime, lblIter,
 	)
 
