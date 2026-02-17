@@ -2,8 +2,13 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"image"
+	"image/draw"
+	"image/png"
 	"os"
+	"path/filepath"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -126,9 +131,70 @@ func build_grid() {
 	grid.Refresh()
 }
 
+func save_to_image(filename string) {
+	if n == 0 {
+		return
+	}
+
+	sz := 130
+	var q image.Image
+
+	decoded, err := png.Decode(bytes.NewReader(queen.Content()))
+	if err == nil {
+		q = decoded
+		sz = q.Bounds().Dx()
+	}
+
+	width := n * sz
+	height := n * sz
+	ul := image.Point{0, 0}
+	lr := image.Point{width, height}
+
+	img := image.NewRGBA(image.Rectangle{ul, lr})
+
+	for r := 0; r < n; r++ {
+		for c := 0; c < n; c++ {
+			x := c * sz
+			y := r * sz
+
+			color := Colors[g[r][c]-'A']
+			outline := image.Rect(x, y, x+sz, y+sz)
+			draw.Draw(img, outline, image.Black, image.Point{0, 0}, draw.Src)
+			bgRect := image.Rect(x+3, y+3, x+sz-3, y+sz-3)
+			draw.Draw(img, bgRect, &image.Uniform{color}, image.Point{0, 0}, draw.Over)
+
+			if ans[r] == c {
+				offset := image.Point{
+					X: (sz - q.Bounds().Dx()) / 2,
+					Y: (sz - q.Bounds().Dy()) / 2,
+				}
+				targetRect := image.Rect(x+offset.X, y+offset.Y, x+offset.X+q.Bounds().Dx(), y+offset.Y+q.Bounds().Dy())
+				draw.Draw(img, targetRect, q, q.Bounds().Min, draw.Over)
+			}
+		}
+	}
+
+	filename += ".png"
+
+	outputPath := filepath.Join("../test", filename)
+
+	f, err := os.Create(outputPath)
+	if err != nil {
+		lblStatus.SetText("Status: failed to save image.")
+		return
+	}
+	defer f.Close()
+
+	err2 := png.Encode(f, img)
+	if err2 != nil {
+		fmt.Println(err2)
+	}
+}
+
 func main() {
 	fmt.Println("working")
 	n = 0
+	found = false
 	queen, _ = fyne.LoadResourceFromPath("../assets/queen.png")
 
 	a := app.New()
@@ -155,6 +221,13 @@ func main() {
 			}
 		}, w)
 	})
+	btnSaveImg := widget.NewButton("Save as image", func() {
+		if !found {
+			return
+		}
+		save_to_image("sol-img-" + time.Now().Format("20060102150405"))
+		lblStatus.SetText("Status: Solution saved as image!")
+	})
 
 	lblSlider := widget.NewLabel("Update speed slider (ms): ")
 	slider := widget.NewSlider(1, 500)
@@ -174,6 +247,7 @@ func main() {
 		lblSlider,
 		slider,
 		layout.NewSpacer(),
+		btnSaveImg,
 		lblStatus, lblTime, lblIter,
 	)
 
