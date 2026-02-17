@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"os"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -14,6 +15,9 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
+
+// Labels
+var lblTime, lblIter, lblStatus *widget.Label
 
 func read_file(path string) bool {
 	f, err := os.Open(path)
@@ -56,6 +60,41 @@ func refresh_grid() {
 	}
 }
 
+func run_solver(mode int, live bool, w *fyne.Window) {
+	if n == 0 {
+		dialog.ShowError(fmt.Errorf("Load file first"), *w)
+		return
+	}
+
+	// reset
+	found = false
+	cnt = 0
+	stop = false
+	ans = make([]int, n)
+	for i := range ans {
+		ans[i] = -1
+	}
+
+	lblStatus.SetText("Status: Running...")
+	start := time.Now()
+	go func() {
+		if mode == 1 {
+			solve1(0, live)
+		} else {
+			mask := make(map[byte]bool)
+			solve2(0, live, mask)
+		}
+
+		dur := time.Since(start)
+
+		refresh_grid()
+		lblStatus.SetText("Status: found a solution!")
+		lblTime.SetText(fmt.Sprintf("Time: %d ms", dur.Milliseconds()))
+		lblIter.SetText(fmt.Sprintf("Iter: %d", cnt))
+	}()
+
+}
+
 func build_grid() {
 	rects = make([][]*canvas.Rectangle, n)
 	texts = make([][]*canvas.Text, n)
@@ -87,18 +126,19 @@ func build_grid() {
 
 func main() {
 	fmt.Println("working")
+	n = 0
 	a := app.New()
 	w := a.NewWindow("Tucil 1")
 	w.Resize(fyne.NewSize(800, 600))
 
 	grid = container.New(layout.NewGridLayout(1))
-	lblTime := widget.NewLabel("Time: 0ms")
-	lblIter := widget.NewLabel("Iter: 0")
-	lblStatus := widget.NewLabel("Status: Waiting for input")
+	lblTime = widget.NewLabel("Time: 0ms")
+	lblIter = widget.NewLabel("Iter: 0")
+	lblStatus = widget.NewLabel("Status: Waiting for input")
 
-	btn1 := widget.NewButton("Solver 1 (Live without pruning)", func() {})
-	btn2 := widget.NewButton("Solver 2 (Live with Pruning)", func() {})
-	btn3 := widget.NewButton("Solver 3 (No live updates)", func() {})
+	btn1 := widget.NewButton("Solver 1 (Live without pruning)", func() { run_solver(1, true, &w) })
+	btn2 := widget.NewButton("Solver 2 (Live with Pruning)", func() { run_solver(2, true, &w) })
+	btn3 := widget.NewButton("Solver 3 (No live updates)", func() { run_solver(1, false, &w) })
 	btnLoad := widget.NewButton("Load Input", func() {
 		dialog.ShowFileOpen(func(r fyne.URIReadCloser, err error) {
 			if r == nil {
@@ -131,6 +171,7 @@ func main() {
 	)
 
 	split := container.NewHSplit(sidepanel, container.NewPadded(grid))
+
 	w.SetContent(split)
 	w.ShowAndRun()
 }
