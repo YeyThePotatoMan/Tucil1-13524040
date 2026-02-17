@@ -25,6 +25,43 @@ var lblTime, lblIter, lblStatus *widget.Label
 
 var queen fyne.Resource
 
+func valid_grid() bool {
+	if n <= 0 {
+		fmt.Println(5)
+		return false
+	}
+	if len(g) != n {
+		fmt.Println(4)
+		return false
+	}
+
+	unique := make(map[byte]bool)
+
+	for r := 0; r < n; r++ {
+		if len(g[r]) != n {
+			fmt.Println(3)
+			return false
+		}
+
+		for c := 0; c < n; c++ {
+			str := g[r][c]
+
+			if str < byte('A') || str > byte('Z') {
+				fmt.Println(1)
+				return false
+			}
+			unique[str] = true
+		}
+	}
+
+	if len(unique) != n {
+		fmt.Println(2)
+		return false
+	}
+
+	return true
+}
+
 func read_file(path string) bool {
 	f, err := os.Open(path)
 	if err != nil {
@@ -41,10 +78,21 @@ func read_file(path string) bool {
 			g = append(g, line)
 		}
 	}
-
-	// TODO : add validation
-
 	n = len(g)
+
+	if !valid_grid() {
+		lblStatus.SetText("Status: Invalid input! make sure the number of row, columns and colour are the same")
+
+		g = []string{}
+		n = 0
+		found = false
+		cnt = 0
+		build_grid()
+		refresh_grid()
+
+		return false
+	}
+
 	ans = make([]int, n)
 	for i := range ans {
 		ans[i] = -1
@@ -96,7 +144,11 @@ func run_solver(mode int, live bool, w *fyne.Window) {
 		dur := time.Since(start)
 
 		refresh_grid()
-		lblStatus.SetText("Status: found a solution!")
+		if found {
+			lblStatus.SetText("Status: found a solution!")
+		} else {
+			lblStatus.SetText("Status: No solution found :(")
+		}
 		lblTime.SetText(fmt.Sprintf("Time: %d ms", dur.Milliseconds()))
 		lblIter.SetText(fmt.Sprintf("Iterations: %d", cnt))
 	}()
@@ -256,6 +308,7 @@ func main() {
 	})
 	btnSaveImg := widget.NewButton("Save answer as image", func() {
 		if !found {
+			lblStatus.SetText("Status: Unable to save solution, no solution found!")
 			return
 		}
 		save_to_image("sol-img-" + time.Now().Format("20060102150405"))
@@ -263,6 +316,7 @@ func main() {
 	})
 	btnSaveTxt := widget.NewButton("Save answer as txt", func() {
 		if !found {
+			lblStatus.SetText("Status: Unable to save solution, no solution found!")
 			return
 		}
 		save_to_txt("sol-txt-" + time.Now().Format("20060102150405"))
