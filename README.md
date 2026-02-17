@@ -47,7 +47,8 @@ alternatively, you can use the executable:
     go mod tidy
     ```
 
-3. ```bash
+3.  Run the executable:
+    ```bash
     cd bin
     ./solver
     ```
