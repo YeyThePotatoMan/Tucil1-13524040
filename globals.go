@@ -2,16 +2,23 @@ package main
 
 import (
 	"image/color"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 )
 
 var (
-	n      int
-	g      []string
-	ans    []int
-	found  bool
-	cnt    int
-	stop   bool
-	delay  int = 50
+	n     int
+	g     []string
+	ans   []int
+	found bool
+	cnt   int
+	stop  bool
+	delay int = 50
+
+	grid   *fyne.Container
+	rects  [][]*canvas.Rectangle
+	texts  [][]*canvas.Text
 	uiChan chan bool
 )
 
