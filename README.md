@@ -1,5 +1,4 @@
-# Tucil1-13524040
-# Queens Puzzle Solver (Tucil Stima)
+# Queens Puzzle Solver (Tucil1-Stima)
 
 A GUI-based software to solve the Queens-Linkedin prblem with brute force.
 This program allows sers to input puzzles via text  or image up to 26 colours and save the solution with .png or.txt format.
