@@ -1,5 +1,9 @@
 package main
 
+import (
+	"time"
+)
+
 func bad(r, c int) bool {
 	for i := 0; i < r; i++ {
 		pc := ans[i]
@@ -21,6 +25,12 @@ func solve1(r int, live bool) {
 	if found || stop {
 		return
 	}
+
+	if live {
+		uiChan <- true
+		time.Sleep(time.Duration(delay) * time.Millisecond)
+	}
+
 	cnt++
 
 	if r == n {
@@ -58,6 +68,11 @@ func solve2(r int, live bool, used map[uint8]bool) {
 		return
 	}
 	cnt++
+
+	if live {
+		uiChan <- true
+		time.Sleep(time.Duration(delay) * time.Millisecond)
+	}
 
 	if r == n {
 		found = true

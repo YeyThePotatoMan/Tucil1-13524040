@@ -90,7 +90,7 @@ func run_solver(mode int, live bool, w *fyne.Window) {
 		refresh_grid()
 		lblStatus.SetText("Status: found a solution!")
 		lblTime.SetText(fmt.Sprintf("Time: %d ms", dur.Milliseconds()))
-		lblIter.SetText(fmt.Sprintf("Iter: %d", cnt))
+		lblIter.SetText(fmt.Sprintf("Iterations: %d", cnt))
 	}()
 
 }
@@ -133,7 +133,7 @@ func main() {
 
 	grid = container.New(layout.NewGridLayout(1))
 	lblTime = widget.NewLabel("Time: 0ms")
-	lblIter = widget.NewLabel("Iter: 0")
+	lblIter = widget.NewLabel("Iterations: 0")
 	lblStatus = widget.NewLabel("Status: Waiting for input")
 
 	btn1 := widget.NewButton("Solver 1 (Live without pruning)", func() { run_solver(1, true, &w) })
