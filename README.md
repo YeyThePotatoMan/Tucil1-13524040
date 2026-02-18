@@ -11,7 +11,7 @@ Built with **Go** and **Fyne** for GUI.
 - Input puzzle via image (`.txt`).
 - Save solution as Image (`.png`) with grid visualization.
 - Save solution as Text (`.txt`).
-- Life update brute-force simulation.
+- Live update brute-force simulation.
 
 ## Requirements
 1.  **Go** (go1.25.5 or higher)
@@ -55,11 +55,11 @@ alternatively, you can use the executable:
 ## How to Use
 1.  **Load Puzzle**:
     * Click **"Load File"** to upload a `.txt` file representing the grid.
-    * Click **"Upload Image"** to upload a screenshot of the puzzle.
-2.  **Solve**: Click the **"Solve"** button.
+    * Enter the size of the grid (N) and click **"Load image input"** to upload a screenshot of the puzzle.
+2.  **Solve**: Click the **"Solve1"** or **"Solve2"** button to solve the puzzle with each corresponding algorithm.
 3.  **Save**:
-    * Click **"Save Image"** to generate a visual solution in the `test/` folder.
-    * Click **"Save Txt"** to generate a text solution in the `test/` folder.
+    * Click **"Save answer as mage"** to generate a visual solution in the `test/` folder.
+    * Click **"Save answer as xt"** to generate a text solution in the `test/` folder.
 
 ## Project Structure
 ```bash
