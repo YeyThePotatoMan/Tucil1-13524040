@@ -1,5 +1,4 @@
-# Tucil1-13524040
-# Queens Puzzle Solver (Tucil Stima)
+# Queens Puzzle Solver (Tucil1-Stima)
 
 A GUI-based software to solve the Queens-Linkedin prblem with brute force.
 This program allows sers to input puzzles via text  or image up to 26 colours and save the solution with .png or.txt format.
@@ -12,7 +11,7 @@ Built with **Go** and **Fyne** for GUI.
 - Input puzzle via image (`.txt`).
 - Save solution as Image (`.png`) with grid visualization.
 - Save solution as Text (`.txt`).
-- Life update brute-force simulation.
+- Live update brute-force simulation.
 
 ## Requirements
 1.  **Go** (go1.25.5 or higher)
@@ -47,7 +46,8 @@ alternatively, you can use the executable:
     go mod tidy
     ```
 
-3. ```bash
+3.  Run the executable:
+    ```bash
     cd bin
     ./solver
     ```
@@ -55,16 +55,14 @@ alternatively, you can use the executable:
 ## How to Use
 1.  **Load Puzzle**:
     * Click **"Load File"** to upload a `.txt` file representing the grid.
-    * (Bonus) Click **"Upload Image"** to upload a screenshot of the puzzle.
-2.  **Solve**: Click the **"Solve"** button.
+    * Enter the size of the grid (N) and click **"Load image input"** to upload a screenshot of the puzzle.
+2.  **Solve**: Click the **"Solve1"** or **"Solve2"** button to solve the puzzle with each corresponding algorithm.
 3.  **Save**:
-    * Enter a filename (e.g., `solution1`).
-    * Click **"Save Image"** to generate a visual solution in the `test/` folder.
-    * Click **"Save Txt"** to generate a text solution in the `test/` folder.
+    * Click **"Save answer as mage"** to generate a visual solution in the `test/` folder.
+    * Click **"Save answer as xt"** to generate a text solution in the `test/` folder.
 
 ## Project Structure
 ```bash
-├── assets            # Assets used in the source code
 ├── bin/              # Location of the executable file
 ├── src/              # Source codes
 ├── test/             # Output folder for solutions
