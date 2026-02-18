@@ -63,7 +63,6 @@ alternatively, you can use the executable:
 
 ## Project Structure
 ```bash
-├── assets            # Assets used in the source code
 ├── bin/              # Location of the executable file
 ├── src/              # Source codes
 ├── test/             # Output folder for solutions
