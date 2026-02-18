@@ -9,6 +9,7 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -17,6 +18,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -27,11 +29,9 @@ var queen fyne.Resource
 
 func valid_grid() bool {
 	if n <= 0 {
-		fmt.Println(5)
 		return false
 	}
 	if len(g) != n {
-		fmt.Println(4)
 		return false
 	}
 
@@ -39,7 +39,6 @@ func valid_grid() bool {
 
 	for r := 0; r < n; r++ {
 		if len(g[r]) != n {
-			fmt.Println(3)
 			return false
 		}
 
@@ -47,7 +46,6 @@ func valid_grid() bool {
 			str := g[r][c]
 
 			if str < byte('A') || str > byte('Z') {
-				fmt.Println(1)
 				return false
 			}
 			unique[str] = true
@@ -55,7 +53,8 @@ func valid_grid() bool {
 	}
 
 	if len(unique) != n {
-		fmt.Println(2)
+		fmt.Println("DEBUG : FALSE")
+		fmt.Println(len(unique))
 		return false
 	}
 
@@ -97,6 +96,10 @@ func read_file(path string) bool {
 	for i := range ans {
 		ans[i] = -1
 	}
+
+	lblTime = widget.NewLabel("Time: -")
+	lblIter = widget.NewLabel("Iterations: -")
+
 	return true
 }
 
@@ -131,6 +134,8 @@ func run_solver(mode int, live bool, w *fyne.Window) {
 		ans[i] = -1
 	}
 
+	lblIter.SetText("Iterations: -")
+	lblTime.SetText("Time: -")
 	lblStatus.SetText("Status: Running...")
 	start := time.Now()
 	go func() {
@@ -276,6 +281,79 @@ func save_to_txt(filename string) {
 	}
 
 }
+
+type MappedColor struct {
+	R, G, B uint32
+	Char    byte
+}
+
+func map_image_input(path string, sz int) bool {
+	f, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	img, _, err := image.Decode(f)
+	if err != nil {
+		return false
+	}
+
+	bounds := img.Bounds()
+	width := bounds.Dx()
+	height := bounds.Dy()
+
+	if width != height {
+		lblStatus.SetText("Status: input image isn't valid")
+	}
+
+	step := width / sz
+
+	n = sz
+	g = make([]string, n)
+	mp := []MappedColor{}
+	cur := byte('A')
+
+	for r := 0; r < n; r++ {
+		rowStr := ""
+		for c := 0; c < n; c++ {
+			cx := (c * step) + step/2
+			cy := (r * step) + step/2
+
+			r, g, b, _ := img.At(cx, cy).RGBA()
+			curColor := MappedColor{R: r, G: g, B: b}
+
+			ch := byte(0)
+			for _, k := range mp {
+				if curColor.R == k.R && curColor.G == k.G && curColor.B == k.B {
+					ch = k.Char
+					break
+				}
+			}
+
+			if ch == 0 {
+				ch = cur
+				curColor.Char = ch
+				mp = append(mp, curColor)
+				cur++
+			}
+
+			rowStr += string(ch)
+		}
+		g[r] = rowStr
+	}
+
+	for i := range mp {
+		fmt.Println(mp[i].R, mp[i].G, mp[i].B)
+	}
+	ans = make([]int, n)
+	for i := range ans {
+		ans[i] = -1
+	}
+
+	return true
+}
+
 func main() {
 	fmt.Println("working")
 	n = 0
@@ -287,8 +365,8 @@ func main() {
 	w.Resize(fyne.NewSize(1200, 600))
 
 	grid = container.New(layout.NewGridLayout(1))
-	lblTime = widget.NewLabel("Time: 0ms")
-	lblIter = widget.NewLabel("Iterations: 0")
+	lblTime = widget.NewLabel("Time: -")
+	lblIter = widget.NewLabel("Iterations: -")
 	lblStatus = widget.NewLabel("Status: Waiting for input")
 
 	btn1 := widget.NewButton("Solver 1 (Live without pruning)", func() { run_solver(1, true, &w) })
@@ -323,6 +401,41 @@ func main() {
 		lblStatus.SetText("Status: Solution saved as text!")
 	})
 
+	entryN := widget.NewEntry()
+	entryN.SetPlaceHolder("Enter the number of row or column")
+	btnLoadImg := widget.NewButton("Load Image Input", func() {
+		inputSize, err := strconv.Atoi(entryN.Text)
+		if err != nil || inputSize <= 0 {
+			dialog.ShowError(fmt.Errorf("Please enter a valid number for N first"), w)
+			return
+		}
+
+		fd := dialog.NewFileOpen(func(reader fyne.URIReadCloser, err error) {
+			if err != nil || reader == nil {
+				return
+			}
+			defer reader.Close()
+
+			cek := map_image_input(reader.URI().Path(), inputSize)
+			if cek {
+				lblStatus.SetText("Status: Image Loaded.")
+				if !valid_grid() {
+					lblStatus.SetText("Status: Image unable to be loaded.")
+					n = 0
+					found = false
+					cnt = 0
+				} else {
+					build_grid()
+				}
+			} else {
+				fmt.Println("Eror on image process")
+			}
+		}, w)
+
+		fd.SetFilter(storage.NewExtensionFileFilter([]string{".png", ".jpg", ".jpeg"}))
+		fd.Show()
+	})
+
 	lblSlider := widget.NewLabel("Update speed slider (ms): ")
 	slider := widget.NewSlider(1, 500)
 	slider.SetValue(50)
@@ -337,6 +450,9 @@ func main() {
 
 	sidepanel := container.NewVBox(
 		btnLoad,
+		widget.NewLabel("Or... upload as a file:"),
+		entryN,
+		btnLoadImg,
 		btn1, btn2, btn3,
 		lblSlider,
 		slider,
