@@ -15,6 +15,18 @@ Built with **Go** and **Fyne** for GUI.
 
 ## Requirements
 1.  **Go** (go1.25.5 or higher)
+2.  GCC 64-bit 
+
+### Windows
+Note: the project itself was developed in ubuntu 22.04 environment. The following windows installation steps would require some fixes (I hope not). Make sure to have MSYS2 installed and run the following command:
+```bash  
+pacman -S mingw-w64-x86_64-gcc
+```
+
+### Ubuntu / Debian
+```bash
+sudo apt install gcc libgl1-mesa-dev xorg-dev
+```
 
 ## Installation
 1.  Clone this repository:
